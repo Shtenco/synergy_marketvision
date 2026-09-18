@@ -1,0 +1,3 @@
+# Security policy — SYNERGY MarketVision
+
+No production secrets in Git. Prefer customer OIDC/mTLS/JWKS, KMS-backed secrets and restricted data/database networks. Feature generation is research infrastructure, not execution authority. Treat customer market data as potentially confidential and define retention/access policy before production. PostgreSQL is authoritative audit; ClickHouse is analytical mirror. No security/regulatory certification is claimed.
