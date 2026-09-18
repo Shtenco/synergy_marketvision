@@ -2,6 +2,8 @@
 
 > **3D/CV-ready market-state tensors and alternative feature generation for quant research**
 
+Version: `2.0.0`
+
 **Enterprise v2.0.0** · FastAPI/OpenAPI · Docker/Compose · RBAC/JWT · PostgreSQL/ClickHouse audit
 
 **Designed for:** Quant research teams, systematic funds, prop firms and alternative-data teams  
