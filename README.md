@@ -280,6 +280,79 @@ MarketVision имеет perception authority только в рамках фор
 - что source tests уже production-green;
 - что current preprocessing optimal.
 
+## 21. 🔬 Feature invariance and leakage tests
+
+Because MarketVision is preprocessing infrastructure, correctness is largely about transformations.
+
+### Causal window
+
+For an observation ending at time (t), every value in the cube must come from bars with timestamp (le t). A regression test should mutate future bars and assert that the current cube hash does not change.
+
+### Scale parity
+
+Training and live inference must use the same preprocessing semantics. Current robust scaling is fitted inside each window; that gives local normalization, which may be intentional, but it must be versioned because it differs from a frozen global scaler.
+
+### Zero-IQR feature
+
+When IQR=0 the code substitutes denominator 1. Tests should verify that constant columns remain finite and interpretable.
+
+### Volume edge cases
+
+Negative input volume is clipped before `log1p`. Tests should record that policy explicitly rather than silently accepting bad market data.
+
+## 22. 📋 Proposed full observation evidence
+
+The current federation payload emits summary features only. For reproducibility, an evidence artifact should additionally preserve:
+
+```text
+observation_id
+symbol
+venue/broker
+timeframe
+first_bar_time
+last_bar_time
+bar_count
+raw_bars_sha256
+window
+preprocessing_version
+cube_sha256
+summary
+software_commit
+```
+
+The full cube can be stored externally/content-addressed if payload size is a concern.
+
+## 23. 📊 Benchmark matrix
+
+MarketVision should be evaluated as a feature representation, not by standalone aesthetics.
+
+Compare downstream on identical OOS folds:
+
+| Representation | Required comparison |
+|---|---|
+| raw returns/volume | baseline |
+| handcrafted standard TA | baseline |
+| current 3-channel cube | candidate |
+| cube without abs channel | ablation |
+| cube without sign channel | ablation |
+| alternative window sizes | sensitivity |
+
+Metrics should include downstream score **and** preprocessing latency/RAM.
+
+## 24. ✅ Promotion gate
+
+Promotion requires:
+
+- causal-window proof;
+- timestamp/source provenance;
+- deterministic cube hashes;
+- preprocessing version;
+- cross-process parity;
+- baseline/ablation OOS evidence;
+- consumer contract observed in MIDAS.
+
+Until those exist, MarketVision is a deterministic feature producer, not a proven alpha source.
+
 ---
 
 [🧭 SYNERGY SYSTEM](https://github.com/Shtenco/synergy_system) · [📚 Atlas](https://github.com/Shtenco/synergy_system/blob/main/docs/SYNERGY_REPOSITORY_ATLAS.md)
