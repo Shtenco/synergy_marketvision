@@ -1,127 +1,285 @@
-# SYNERGY MarketVision
+# 👁️ SYNERGY MarketVision — verified technical dossier
 
-> **3D/CV-ready market-state tensors and alternative feature generation for quant research**
+> **Статус:** 🟡 CANDIDATE — deterministic market-feature cube, typed contract, enterprise API and tests exist.
+> **Проверено по фактическому source/tests:** 29.09.2026.
 
-Version: `2.0.0`
+## 1. 🎯 Задача
 
-**Enterprise v2.0.0** · FastAPI/OpenAPI · Docker/Compose · RBAC/JWT · PostgreSQL/ClickHouse audit
+`synergy_marketvision` превращает OHLCV bars в нормализованное многоканальное market representation для downstream analytics.
 
-**Designed for:** Quant research teams, systematic funds, prop firms and alternative-data teams  
-**Primary endpoint:** `POST /enterprise/v1/marketvision/features`
-
-> [!IMPORTANT]
-> Feature-generation infrastructure only. Alternative representations do not guarantee predictive power or trading profit.
-
-## Verification
-**19 tests passed** · health smoke **80/80 200** · local p95 **62.4 ms** (~630 req/s). Health smoke only.
-
-## Quick start
-```bash
-pip install -e '.[dev,enterprise]'
-pytest -q
-python -m synergy_marketvision.api
-```
-
-## CTO package
-[Due diligence](docs/CTO_DUE_DILIGENCE.md) · [Architecture](docs/ARCHITECTURE_DIAGRAMS.md) · [API](docs/API_EXAMPLES.md) · [Security](SECURITY.md) · [Benchmarks](docs/BENCHMARKS_AND_ACCEPTANCE.md) · [SLA/SLO](docs/SLA_SLO.md) · [Deployment](docs/DEPLOYMENT_CHECKLIST.md) · [Pilot](docs/CUSTOMER_PILOT.md)
-
-
-<!-- SYNERGY-FEDERATION-PASSPORT:START -->
----
-
-## 🧭 SYNERGY federation passport
-
-**Домен:** 👁️ Market perception layer  
-**Архитектурный родитель:** [`synergy_midas_ai`](https://github.com/Shtenco/synergy_midas_ai)  
-**Архитектурный корень:** [`synergy_system`](https://github.com/Shtenco/synergy_system)
-
-```mermaid
-flowchart LR
-    SYS[🧭 synergy_system] --> P[synergy_midas_ai]
-    P --> THIS[synergy_marketvision]
-    THIS --> E[📦 Evidence / outputs]
-```
-
-Архитектурная стрелка — это карта федерации, а не автоматически подтверждённая runtime dependency.
-
-### Единый стандарт
-
-Каждый проект должен документировать реальную проблему, реализацию, тесты, evidence, ограничения, file map, воспроизводимость, roadmap и границы утверждений. Это тот же принцип, который используется в `dlp_solver`.
-
-### Навигация
-
-- [📚 Атлас всех 75 репозиториев](https://github.com/Shtenco/synergy_system/blob/main/docs/SYNERGY_REPOSITORY_ATLAS.md)
-- [🧾 Машиночитаемый registry](https://github.com/Shtenco/synergy_system/blob/main/registry/SYNERGY_REPOSITORIES.json)
-- [🧭 SYNERGY SYSTEM](https://github.com/Shtenco/synergy_system)
-
-### Evidence rule
-
-`GREEN` означает только воспроизводимо подтверждённый тезис. Гипотеза, benchmark без корректного протокола, архитектурная диаграмма или красивый экономический цикл сами по себе GREEN не дают.
-
-<!-- SYNERGY-FEDERATION-PASSPORT:END -->
----
-
-# 👁️ Глубокая техническая спецификация MarketVision
-
-## 🎯 Проблема
-
-Красивое 3D/CV-представление рынка может кодировать leakage или не иметь дополнительной predictive value. MarketVision должен быть feature generator с проверяемой причинной привязкой.
-
-## 🏗️ Pipeline
-
-```mermaid
-flowchart LR
-    N0[Raw bars/order book] --> N1[Causal alignment] --> N2[Tensor/image encoding] --> N3[Feature extraction] --> N4[Feature metadata] --> N5[Validation handoff]
-```
-
-## 📥 Входы
-
-- OHLCV/order book;
-- timestamps;
-- session/calendar;
-- normalization parameters;
-- optional alternative data;
-
-## 📤 Выходы
-
-- versioned tensors/features;
-- feature provenance;
-- lookback window;
-- normalization metadata;
-- quality flags;
-
-## 🛡️ Непереговорные инварианты
+Ключевой принцип:
 
 ```text
-no future pixels/features
-normalization fit only on allowed history
-feature timestamp <= decision timestamp
-representation quality != predictive quality
-all transforms reproducible
+feature cube != forecast
+feature summary != trading signal
+market perception != execution authority
 ```
 
-## 🧪 Как ловить ложный GREEN
+## 2. 📦 Фактический состав
 
-- health/API throughput не использовать как доказательство market edge;
-- обязательны timestamp/state-version checks;
-- adversarial/negative fixtures должны проверять отказ;
-- сохранять полный request → decision → execution/evidence trace;
-- live claims отделять от local smoke и simulation;
-- cost/latency/failure assumptions должны быть явными.
+Repository содержит Python package:
 
-## 🔗 Контракт с соседями
+- `core.py`;
+- `api.py`;
+- `synergy_contracts.py`;
+- enterprise layer;
+- tests;
+- Docker/deploy/loadtest scaffolding.
 
-- [`computer_vision_trading_metatrader_5`](https://github.com/Shtenco/computer_vision_trading_metatrader_5)
-- [`3D_bars_market_structure`](https://github.com/Shtenco/3D_bars_market_structure)
-- [`synergy_quantlab`](https://github.com/Shtenco/synergy_quantlab)
-- [`synergy_midas_ai`](https://github.com/Shtenco/synergy_midas_ai)
+## 3. 🧠 Required input schema
 
-## 🚀 Следующий доказательный рубеж
+`core.py` требует columns:
 
-1. frozen acceptance fixtures;
-2. negative/adversarial suite;
-3. typed cross-repo schema;
-4. end-to-end trace ID;
-5. rollback/recovery evidence;
-6. documented failure-mode table;
-7. reproducible evidence bundle.
+```text
+open
+high
+low
+close
+volume
+```
+
+Если хотя бы одной колонки нет — `ValueError`.
+
+Для `window` требуется минимум столько строк.
+
+## 4. 📐 Feature construction
+
+Для последних `window` bars вычисляются четыре raw features.
+
+### Log return
+
+[
+r_t=
+log(close_t)-log(close_{t-1})
+]
+
+с защитой от near-zero через `maximum(close,1e-12)`.
+
+### Relative high-low spread
+
+[
+spread_t=
+rac{high_t-low_t}{|close_t|}
+]
+
+### Log volume
+
+[
+v_t=log(1+max(volume_t,0))
+]
+
+### Direction
+
+[
+d_t=sign(r_t)
+]
+
+Затем data matrix robust-scaled по median/IQR.
+
+Если IQR=0, denominator заменяется на 1.
+
+## 5. 🧊 Market cube
+
+После scaling формируются три channels:
+
+1. signed scaled features;
+2. absolute scaled features;
+3. sign of scaled features.
+
+Итоговая shape:
+
+```text
+3 x window x 4
+```
+
+dtype = `float32`.
+
+Это market representation, а не image classifier и не prediction model.
+
+## 6. 📊 Summary features
+
+`summary_features()` возвращает:
+
+- shape;
+- mean;
+- std;
+- energy:
+  [
+  E=mean(cube^2)
+  ]
+
+## 7. 🏗️ Архитектура
+
+```mermaid
+flowchart LR
+    B[OHLCV bars] --> W[Window]
+    W --> F[Returns / Spread / Volume / Direction]
+    F --> RS[Robust scale]
+    RS --> C[3-channel market cube]
+    C --> S[Summary features]
+    S --> P[market-features/v1]
+    P --> MIDAS[synergy_midas_ai]
+```
+
+## 8. 🔗 Federation contract
+
+```text
+CONTRACT_ID = synergy.trading.market-features/v1
+AUTHORITY   = market_perception
+```
+
+`market_features_payload` требует:
+
+- symbol;
+- bars;
+- window;
+- observation id.
+
+Output:
+
+- observation id;
+- normalized symbol;
+- window;
+- summary features;
+- `authorization=false`.
+
+## 9. 📥 Inputs / 📤 Outputs
+
+Inputs: OHLCV bars + observation metadata.
+
+Output contract не передаёт полный cube — только summary dict.
+
+Это важно: downstream `market-features/v1` в текущей реализации получает aggregate representation, не raw tensor.
+
+## 10. 🛡️ Invariants
+
+```text
+missing OHLCV -> reject
+insufficient rows -> reject
+negative volume -> clipped before log1p
+feature cube != signal
+summary feature != alpha
+authorization = false
+```
+
+## 11. 🧪 Реальные tests
+
+Enterprise product test:
+
+- строит 20 synthetic OHLCV bars;
+- запрашивает window=16;
+- вызывает `POST /enterprise/v1/marketvision/features`;
+- проверяет `shape`, `energy`, `request_id`;
+- audit linkage;
+- viewer role → 403;
+- health/features routes существуют.
+
+Дополнительно есть tests core, service, adapters, deployment, release metadata и federation contract.
+
+## 12. ⚠️ Scientific limitations
+
+Текущий feature cube:
+
+- не содержит order book;
+- не содержит bid/ask;
+- не содержит cross-asset context;
+- robust scaling производится внутри текущего window;
+- не является learned representation;
+- summary сильно сжимает tensor до mean/std/energy.
+
+Следовательно доказательство полезности для trading требует отдельного downstream ablation/OOS benchmark.
+
+## 13. 🧪 Required benchmarks
+
+- cube vs raw OHLCV baseline;
+- robust-scale vs standardization;
+- channel ablation;
+- window sensitivity;
+- asset/timeframe transfer;
+- leakage audit;
+- frozen preprocessing parity;
+- downstream model OOS;
+- shuffled-label sanity;
+- latency/memory benchmark.
+
+## 14. ⚠️ Data provenance gaps
+
+Contract имеет `observation_id`, но для сильной provenance модели нужны:
+
+- source;
+- symbol venue;
+- timeframe;
+- bar timestamps;
+- last-bar close time;
+- data hash;
+- preprocessing version.
+
+Без этого одинаковый observation id нельзя независимо воспроизвести.
+
+## 15. 🛠️ Воспроизводимость
+
+```bash
+git clone https://github.com/Shtenco/synergy_marketvision.git
+cd synergy_marketvision
+python -m pip install -e .
+pytest -q
+```
+
+## 16. 🗺️ Карта repository
+
+| Path | Role |
+|---|---|
+| `src/.../core.py` | feature cube |
+| `src/.../synergy_contracts.py` | market-features/v1 |
+| `src/.../api.py` | API |
+| `src/.../enterprise/` | auth/audit |
+| `tests/` | product/service/deploy tests |
+| `Dockerfile` | container |
+| `deploy/` | deployment |
+| `loadtests/` | load testing |
+
+## 17. 🔗 Место в SYNERGY
+
+```text
+market bars
+→ synergy_marketvision
+→ market-features/v1
+→ synergy_midas_ai
+```
+
+MarketVision имеет perception authority только в рамках формата features; не имеет trade authority.
+
+## 18. 📊 Evidence maturity
+
+| Layer | Status |
+|---|---|
+| deterministic features | ✅ |
+| robust scaling | ✅ |
+| market cube | ✅ |
+| summary contract | ✅ |
+| enterprise tests | ✅ source |
+| provenance-complete bars | incomplete |
+| alpha/OOS proof | ❌ |
+| observed federation E2E | ❌ |
+
+## 19. 🚀 Roadmap
+
+1. add timestamps/source/hash;
+2. version preprocessing;
+3. persist cube evidence;
+4. benchmark against raw baseline;
+5. downstream ablations;
+6. cross-asset OOS;
+7. M4 observed federation evidence.
+
+## 20. 🛑 Что проект НЕ утверждает
+
+- что cube сам предсказывает цену;
+- что energy имеет trading edge;
+- что feature output разрешает сделку;
+- что source tests уже production-green;
+- что current preprocessing optimal.
+
+---
+
+[🧭 SYNERGY SYSTEM](https://github.com/Shtenco/synergy_system) · [📚 Atlas](https://github.com/Shtenco/synergy_system/blob/main/docs/SYNERGY_REPOSITORY_ATLAS.md)
