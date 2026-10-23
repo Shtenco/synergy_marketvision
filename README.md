@@ -1,9 +1,9 @@
-# 👁️ SYNERGY MarketVision — verified technical dossier
+#  SYNERGY MarketVision — verified technical dossier
 
-> **Статус:** 🟡 CANDIDATE — deterministic market-feature cube, typed contract, enterprise API and tests exist.
+> **Статус:**  CANDIDATE — deterministic market-feature cube, typed contract, enterprise API and tests exist.
 > **Проверено по фактическому source/tests:** 29.09.2026.
 
-## 1. 🎯 Задача
+## 1.  Задача
 
 `synergy_marketvision` превращает OHLCV bars в нормализованное многоканальное market representation для downstream analytics.
 
@@ -15,7 +15,7 @@ feature summary != trading signal
 market perception != execution authority
 ```
 
-## 2. 📦 Фактический состав
+## 2.  Фактический состав
 
 Repository содержит Python package:
 
@@ -26,7 +26,7 @@ Repository содержит Python package:
 - tests;
 - Docker/deploy/loadtest scaffolding.
 
-## 3. 🧠 Required input schema
+## 3.  Required input schema
 
 `core.py` требует columns:
 
@@ -42,7 +42,7 @@ volume
 
 Для `window` требуется минимум столько строк.
 
-## 4. 📐 Feature construction
+## 4.  Feature construction
 
 Для последних `window` bars вычисляются четыре raw features.
 
@@ -78,7 +78,7 @@ d_t=sign(r_t)
 
 Если IQR=0, denominator заменяется на 1.
 
-## 5. 🧊 Market cube
+## 5.  Market cube
 
 После scaling формируются три channels:
 
@@ -96,7 +96,7 @@ dtype = `float32`.
 
 Это market representation, а не image classifier и не prediction model.
 
-## 6. 📊 Summary features
+## 6.  Summary features
 
 `summary_features()` возвращает:
 
@@ -108,7 +108,7 @@ dtype = `float32`.
   E=mean(cube^2)
   ]
 
-## 7. 🏗️ Архитектура
+## 7.  Архитектура
 
 ```mermaid
 flowchart LR
@@ -121,7 +121,7 @@ flowchart LR
     P --> MIDAS[synergy_midas_ai]
 ```
 
-## 8. 🔗 Federation contract
+## 8.  Federation contract
 
 ```text
 CONTRACT_ID = synergy.trading.market-features/v1
@@ -143,7 +143,7 @@ Output:
 - summary features;
 - `authorization=false`.
 
-## 9. 📥 Inputs / 📤 Outputs
+## 9.  Inputs /  Outputs
 
 Inputs: OHLCV bars + observation metadata.
 
@@ -151,7 +151,7 @@ Output contract не передаёт полный cube — только summary
 
 Это важно: downstream `market-features/v1` в текущей реализации получает aggregate representation, не raw tensor.
 
-## 10. 🛡️ Invariants
+## 10.  Invariants
 
 ```text
 missing OHLCV -> reject
@@ -162,7 +162,7 @@ summary feature != alpha
 authorization = false
 ```
 
-## 11. 🧪 Реальные tests
+## 11.  Реальные tests
 
 Enterprise product test:
 
@@ -176,7 +176,7 @@ Enterprise product test:
 
 Дополнительно есть tests core, service, adapters, deployment, release metadata и federation contract.
 
-## 12. ⚠️ Scientific limitations
+## 12.  Scientific limitations
 
 Текущий feature cube:
 
@@ -189,7 +189,7 @@ Enterprise product test:
 
 Следовательно доказательство полезности для trading требует отдельного downstream ablation/OOS benchmark.
 
-## 13. 🧪 Required benchmarks
+## 13.  Required benchmarks
 
 - cube vs raw OHLCV baseline;
 - robust-scale vs standardization;
@@ -202,7 +202,7 @@ Enterprise product test:
 - shuffled-label sanity;
 - latency/memory benchmark.
 
-## 14. ⚠️ Data provenance gaps
+## 14.  Data provenance gaps
 
 Contract имеет `observation_id`, но для сильной provenance модели нужны:
 
@@ -216,7 +216,7 @@ Contract имеет `observation_id`, но для сильной provenance мо
 
 Без этого одинаковый observation id нельзя независимо воспроизвести.
 
-## 15. 🛠️ Воспроизводимость
+## 15.  Воспроизводимость
 
 ```bash
 git clone https://github.com/Shtenco/synergy_marketvision.git
@@ -225,7 +225,7 @@ python -m pip install -e .
 pytest -q
 ```
 
-## 16. 🗺️ Карта repository
+## 16.  Карта repository
 
 | Path | Role |
 |---|---|
@@ -238,7 +238,7 @@ pytest -q
 | `deploy/` | deployment |
 | `loadtests/` | load testing |
 
-## 17. 🔗 Место в SYNERGY
+## 17.  Место в SYNERGY
 
 ```text
 market bars
@@ -249,20 +249,20 @@ market bars
 
 MarketVision имеет perception authority только в рамках формата features; не имеет trade authority.
 
-## 18. 📊 Evidence maturity
+## 18.  Evidence maturity
 
 | Layer | Status |
 |---|---|
-| deterministic features | ✅ |
-| robust scaling | ✅ |
-| market cube | ✅ |
-| summary contract | ✅ |
-| enterprise tests | ✅ source |
+| deterministic features |  |
+| robust scaling |  |
+| market cube |  |
+| summary contract |  |
+| enterprise tests |  source |
 | provenance-complete bars | incomplete |
-| alpha/OOS proof | ❌ |
-| observed federation E2E | ❌ |
+| alpha/OOS proof |  |
+| observed federation E2E |  |
 
-## 19. 🚀 Roadmap
+## 19.  Roadmap
 
 1. add timestamps/source/hash;
 2. version preprocessing;
@@ -272,7 +272,7 @@ MarketVision имеет perception authority только в рамках фор
 6. cross-asset OOS;
 7. M4 observed federation evidence.
 
-## 20. 🛑 Что проект НЕ утверждает
+## 20.  Что проект НЕ утверждает
 
 - что cube сам предсказывает цену;
 - что energy имеет trading edge;
@@ -280,7 +280,7 @@ MarketVision имеет perception authority только в рамках фор
 - что source tests уже production-green;
 - что current preprocessing optimal.
 
-## 21. 🔬 Feature invariance and leakage tests
+## 21.  Feature invariance and leakage tests
 
 Because MarketVision is preprocessing infrastructure, correctness is largely about transformations.
 
@@ -300,7 +300,7 @@ When IQR=0 the code substitutes denominator 1. Tests should verify that constant
 
 Negative input volume is clipped before `log1p`. Tests should record that policy explicitly rather than silently accepting bad market data.
 
-## 22. 📋 Proposed full observation evidence
+## 22.  Proposed full observation evidence
 
 The current federation payload emits summary features only. For reproducibility, an evidence artifact should additionally preserve:
 
@@ -322,7 +322,7 @@ software_commit
 
 The full cube can be stored externally/content-addressed if payload size is a concern.
 
-## 23. 📊 Benchmark matrix
+## 23.  Benchmark matrix
 
 MarketVision should be evaluated as a feature representation, not by standalone aesthetics.
 
@@ -339,7 +339,7 @@ Compare downstream on identical OOS folds:
 
 Metrics should include downstream score **and** preprocessing latency/RAM.
 
-## 24. ✅ Promotion gate
+## 24.  Promotion gate
 
 Promotion requires:
 
@@ -355,4 +355,4 @@ Until those exist, MarketVision is a deterministic feature producer, not a prove
 
 ---
 
-[🧭 SYNERGY SYSTEM](https://github.com/Shtenco/synergy_system) · [📚 Atlas](https://github.com/Shtenco/synergy_system/blob/main/docs/SYNERGY_REPOSITORY_ATLAS.md)
+[ SYNERGY SYSTEM](https://github.com/Shtenco/synergy_system) · [ Atlas](https://github.com/Shtenco/synergy_system/blob/main/docs/SYNERGY_REPOSITORY_ATLAS.md)
