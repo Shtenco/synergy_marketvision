@@ -1,3 +1,11 @@
+<!-- SCIENTIFIC-V5-2026:START -->
+<img src="assets/readme/scientific-architecture-v5.svg" width="100%" alt="SYNERGY MarketVision scientific architecture"/>
+
+**[Научно-техническое досье V5: математика, исходники, тесты, ограничения](docs/SCIENTIFIC_DOSSIER_V5_2026.md)**  
+**Проверяемый статус:** CANDIDATE: исходники и unit-tests; не торговый прогноз. Предыдущий README ниже сохранён; наличие кода не означает подтверждённого production.
+
+<!-- SCIENTIFIC-V5-2026:END -->
+
 #  SYNERGY MarketVision — verified technical dossier
 
 > **Статус:**  CANDIDATE — deterministic market-feature cube, typed contract, enterprise API and tests exist.
